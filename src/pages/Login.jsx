@@ -1,10 +1,10 @@
-import {useContext, useState } from "react";
+import {useContext, useState, useEffect } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 import { HiOutlineMail, HiOutlineLockClosed } from 'react-icons/hi';
 import { MdAlternateEmail } from "react-icons/md";
-
+import toast, { Toaster } from 'react-hot-toast';
 export default function Login() {
-  const { login, loading } = useContext(AuthContext);
+  const { login, loading, error } = useContext(AuthContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -13,8 +13,29 @@ export default function Login() {
     login(email, password);
   }
 
+  useEffect(() =>{
+    const savedEmail = localStorage.getItem("email");
+    if (savedEmail) {
+      setEmail(savedEmail);
+    }
+  }, []);
+
+  useEffect(() =>{
+    if (email) {
+      localStorage.setItem("email", email);
+    }
+  }, [email]);
+
+  const erroNotification = () => toast.error('Usuário ou senha inválidos!');
+
+  useEffect(() => {
+    if (error) {
+      erroNotification();
+    }
+  }, [error]);
   return (
     <div className="flex min-h-screen">
+      <Toaster position="top-center"/>
         <div className="hidden lg:flex lg:w-1/2 bg-blue-600 min-h-screen items-center justify-center">
           <img
             alt="Login illustration"
@@ -84,6 +105,7 @@ export default function Login() {
             <div>
               <button
                 type="submit"
+                // onClick={()=> setEmail({email: email})}
                 className="flex w-full justify-center cursor-pointer rounded-md bg-indigo-600 px-3 py-2 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 {loading ? 'Entrando...' : 'Login'}

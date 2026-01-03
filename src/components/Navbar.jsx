@@ -27,7 +27,7 @@ const Navbar = () => {
         <div className="flex items-center gap-6">
           {/* Nome do usuário */}
           <span className="font-semibold text-lg">
-            Olá, {user?.name || "Usuário"}
+            Olá, {user?.username || "Usuário"}
           </span>
 
           {/* Botão de Notificações */}
@@ -97,8 +97,6 @@ const Navbar = () => {
              <BiSolidMoon size={25}/>
             )}
           </button>
-
-          
         </div>
       </div>
     </nav>

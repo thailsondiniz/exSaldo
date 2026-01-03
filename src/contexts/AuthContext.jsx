@@ -1,28 +1,68 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { API_URL } from "../config.js";
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-    const [ user, setUser ] = useState(null);
-    const [ loading, setLoading] = useState(false);
-    const navigate = useNavigate();
-    function login(email, password){
+  const [user, setUser] = useState(null);
+  const [loginData, setLoginData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    const token = localStorage.getItem("token");
+
+    if (savedUser && token) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!loginData) return;
+
+    async function signIn() {
+      try {
         setLoading(true);
-        setTimeout(()=>{
-            const name = email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
-            setUser({email, name});
-            setLoading(false);
-            navigate("/");
-        }, 1000)
+        const response = await axios.post(`${API_URL}/login`, loginData);
+        setUser(response.data.user);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem("token", response.data.token);
+        setLoading(false);
+        navigate("/");
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
     }
+    signIn();
+  }, [loginData, navigate]);
 
-    function logout(){
-        setUser(null);
-    }
+  function login(email, password) {
+    setError(null);
+    setLoginData({ email, password });
+  }
 
-    return (
-        <AuthContext.Provider value={{user, login, logout, loading}}>
-            {children}
-        </AuthContext.Provider>
-    );
+  function logout() {
+    setUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+  }
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        loading,
+        error,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
