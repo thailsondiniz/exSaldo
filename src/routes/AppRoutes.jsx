@@ -7,7 +7,12 @@ import Transactions from "../pages/Transactions";
 import MainLayout from "../layout/MainLayout";
 
 function PrivateRoute({ children }) {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+  
+  if (loading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Carregando...</div>;
+  }
+  
   return user ? children : <Navigate to="/login" />;
 }
 

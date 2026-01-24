@@ -7,11 +7,11 @@ function App() {
 
   return (
     <BrowserRouter>
-    <ThemeProvider>
-    <AuthProvider>
-     <AppRoutes />
-    </AuthProvider>
-    </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <AppRoutes />
+        </ThemeProvider>
+      </AuthProvider>
     </BrowserRouter>
   )
 }

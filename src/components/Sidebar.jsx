@@ -1,19 +1,14 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useContext } from 'react'
 import { AuthContext } from '../contexts/AuthContext.jsx'
 
 const Sidebar = () => {
-  const navigate = useNavigate()
   const { logout } = useContext(AuthContext)
-
-  const handleNavigation = (path) => {
-    navigate(path)
-  }
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    window.location.href = '/login'
   }
 
   return (
@@ -26,9 +21,8 @@ const Sidebar = () => {
     </h5>
   </div>
   <nav class="flex min-w-[240px] flex-col gap-1 p-2 font-sans text-base font-normal text-blue-gray-700">
-    <div role="button"
-      onClick={() => handleNavigation('/dashboard')}
-      class="flex items-center w-full p-3 leading-tight transition-all cursor-pointer rounded-lg outline-none text-start hover:bg-blue-gray-50 hover:bg-opacity-80 hover:text-blue-gray-900 focus:bg-blue-gray-50 focus:bg-opacity-80 focus:text-blue-gray-900 active:bg-blue-gray-50 active:bg-opacity-80 active:text-blue-gray-900">
+    <Link to="/dashboard"
+      className="flex items-center w-full p-3 leading-tight transition-all cursor-pointer rounded-lg outline-none text-start hover:bg-blue-gray-50 hover:bg-opacity-80 hover:text-blue-gray-900 focus:bg-blue-gray-50 focus:bg-opacity-80 focus:text-blue-gray-900 active:bg-blue-gray-50 active:bg-opacity-80 active:text-blue-gray-900">
       <div class="grid mr-4 place-items-center">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
           class="w-5 h-5">
@@ -38,10 +32,9 @@ const Sidebar = () => {
         </svg>
       </div>
       Dashboard
-    </div>
-    <div role="button"
-      onClick={() => handleNavigation('/transactions')}
-      class="flex items-center w-full p-3 leading-tight transition-all cursor-pointer rounded-lg outline-none text-start hover:bg-blue-gray-50 hover:bg-opacity-80 hover:text-blue-gray-900 focus:bg-blue-gray-50 focus:bg-opacity-80 focus:text-blue-gray-900 active:bg-blue-gray-50 active:bg-opacity-80 active:text-blue-gray-900">
+    </Link>
+    <Link to="/transactions"
+      className="flex items-center w-full p-3 leading-tight transition-all cursor-pointer rounded-lg outline-none text-start hover:bg-blue-gray-50 hover:bg-opacity-80 hover:text-blue-gray-900 focus:bg-blue-gray-50 focus:bg-opacity-80 focus:text-blue-gray-900 active:bg-blue-gray-50 active:bg-opacity-80 active:text-blue-gray-900">
       <div class="grid mr-4 place-items-center">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
           class="w-5 h-5">
@@ -51,7 +44,7 @@ const Sidebar = () => {
         </svg>
       </div>
       Transações
-    </div>
+    </Link>
     <div role="button"
       class="flex items-center w-full p-3 leading-tight transition-all cursor-pointer rounded-lg outline-none text-start hover:bg-blue-gray-50 hover:bg-opacity-80 hover:text-blue-gray-900 focus:bg-blue-gray-50 focus:bg-opacity-80 focus:text-blue-gray-900 active:bg-blue-gray-50 active:bg-opacity-80 active:text-blue-gray-900">
       <div class="grid mr-4 place-items-center">

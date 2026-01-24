@@ -4,20 +4,40 @@ import axios from "axios";
 import { API_URL } from "../config.js";
 export const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+function AuthProviderContent({ children }) {
   const [user, setUser] = useState(null);
   const [loginData, setLoginData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
+    async function restoreSession() {
+      try {
+        const token = localStorage.getItem("token");
+        const savedUser = localStorage.getItem("user");
 
-    if (savedUser && token) {
-      setUser(JSON.parse(savedUser));
+        if (token && savedUser) {
+          // Validar token com a API
+          const response = await axios.get(`${API_URL}/me`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setUser(response.data.user || JSON.parse(savedUser));
+        }
+      } catch (error) {
+        // Token inválido ou expirado
+        console.error("Erro ao restaurar sessão:", error.message);
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     }
+
+    restoreSession();
   }, []);
 
   useEffect(() => {
@@ -27,18 +47,26 @@ export function AuthProvider({ children }) {
       try {
         setLoading(true);
         const response = await axios.post(`${API_URL}/login`, loginData);
-        setUser(response.data.user);
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-        localStorage.setItem("token", response.data.token);
+        const userData = response.data.user;
+        const token = response.data.token;
+        
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+        localStorage.setItem("token", token);
+        setError(null);
         setLoading(false);
         navigate("/");
       } catch (error) {
-        setError(error.message);
-      } finally {
+        console.error("Erro ao fazer login:", error.message);
+        setError(error.response?.data?.message || error.message);
+        setUser(null);
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
         setLoading(false);
       }
     }
     signIn();
+    setLoginData(null);
   }, [loginData, navigate]);
 
   function login(email, password) {
@@ -64,5 +92,13 @@ export function AuthProvider({ children }) {
     >
       {children}
     </AuthContext.Provider>
+  );
+}
+
+export function AuthProvider({ children }) {
+  return (
+    <AuthProviderContent>
+      {children}
+    </AuthProviderContent>
   );
 }
