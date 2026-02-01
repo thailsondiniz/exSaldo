@@ -62,28 +62,28 @@ const Dashboard = () => {
         <DashboardCard
           icon={<MdAccountBalanceWallet color="#2E4CAD" size={28} />}
           title="Saldo"
-          value={`R$ ${saldo}`}
+          value={`R$ ${saldo.toFixed(2)}`}
           percent={8}
           lottieUrl="https://lottie.host/80832f20-7e17-4339-bedf-3c3ed0257655/mxSZSzeuyY.lottie"
         />
         <DashboardCard
           icon={<FaHandHoldingUsd color="#2E4CAD" size={28} />}
           title="Renda"
-          value={`R$ ${renda}`}
+          value={`R$ ${renda.toFixed(2)}`}
           percent={12}
           lottieUrl="https://lottie.host/f3f8d4e3-771b-408c-92c8-942f862b90bd/uwgwjojTr2.lottie"
         />
         <DashboardCard
           icon={<LiaPiggyBankSolid color="#2E4CAD" size={28} />}
           title="Poupança"
-          value={`R$ ${poupanca}`}
+          value={`R$ ${poupanca.toFixed(2)}`}
           percent={15}
           lottieUrl="https://lottie.host/2fc39501-9860-42f5-a8dd-0857b3123959/I27gV2xRoX.lottie"
         />
         <DashboardCard
           icon={<BsCashCoin color="#2E4CAD" size={28} />}
           title="Despesas"
-          value={`R$ ${despesas}`}
+          value={`R$ ${despesas.toFixed(2)}`}
           percent={-3}
           lottieUrl="https://lottie.host/92398dea-0816-4f83-946f-f087e93fe604/gJ4FrzwMkK.lottie"
         />

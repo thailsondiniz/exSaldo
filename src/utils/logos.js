@@ -15,9 +15,11 @@ import uber from "../assets/logos_empresas/Uber.png";
 import uberEats from "../assets/logos_empresas/Uber-eats.png";
 import youtube from "../assets/logos_empresas/youtube.png";
 import netflix from "../assets/logos_empresas/Netflix_icon.svg.png";
+import max from "../assets/logos_empresas/hbo-max.png";
+import apple from "../assets/logos_empresas/apple.jpg";
 
 export const companiesLogo = {
-  __99: logo99,
+  _99: logo99,
   aliexpress,
   amazon,
   c6bank,
@@ -34,6 +36,8 @@ export const companiesLogo = {
   uberEats,
   youtube,
   netflix,
+  max,
+  apple,
 };
 
 export const COMPANIES_KEYWORDS = {
@@ -54,4 +58,5 @@ export const COMPANIES_KEYWORDS = {
   netflix: ["netflix"],
   max: ["max", "hbo max"],
   primeVideo: ["prime", "prime video", "amazon prime"],
+  apple: ["apple", "app store", "itunes"],
 };
