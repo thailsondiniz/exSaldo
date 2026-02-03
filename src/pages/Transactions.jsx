@@ -16,6 +16,8 @@ const TABLE_HEAD = ["Data", "Descrição", "Categoria", "Valor", "Ações"];
 const Transactions = () => {
   const location = useLocation()
   const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState(null);
   const today = new Date().toISOString().split('T')[0];
   const [date, setDate] = useState(today);
 
@@ -26,6 +28,9 @@ const Transactions = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingTransactionId, setEditingTransactionId] = useState(null);
 
   const getCompanyLogo = (description) => {
     if (!description) return null;
@@ -163,25 +168,60 @@ const Transactions = () => {
     }
 
     try {
-      const response = await axios.post(`${API_URL}/transactions`, payload, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      if (isEditing && editingTransactionId) {
+        // Atualizar transação
+        const response = await axios.put(`${API_URL}/transactions/${editingTransactionId}`, payload, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setTransactions(transactions.map(t => t._id === editingTransactionId ? response.data.transaction : t));
+        toast.success('Transação atualizada com sucesso!');
+      } else {
+        // Criar nova transação
+        const response = await axios.post(`${API_URL}/transactions`, payload, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        setTransactions([...transactions, response.data.transaction]);
+        toast.success('Transação criada com sucesso!');
+      }
+      
       setOpen(false);
-      setTransactions([...transactions, response.data.transaction]);
       setDescription('');
       setAmount('');
       setDate(today);
       setSelectedType('');
       setSelectedCategory('');
       setCategories([]);
-      toast.success('Transação criada com sucesso!');
+      setIsEditing(false);
+      setEditingTransactionId(null);
     } catch (error) {
-      console.error('Erro ao criar transação:', error.response?.data || error.message);
-      toast.error('Erro ao criar transação. Por favor, tente novamente.');
+      console.error('Erro ao salvar transação:', error.response?.data || error.message);
+      toast.error('Erro ao salvar transação. Por favor, tente novamente.');
     }
 
+  }
+
+  const handleDeleteTransaction = async (transactionId) => {
+    console.log('Deletando transação com ID:', transactionId);
+    try {
+      const response = await axios.delete(`${API_URL}/transactions/${transactionId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      console.log('Resposta da exclusão:', response);
+      setTransactions(transactions.filter(transaction => transaction._id !== transactionId));
+      toast.success('Transação deletada com sucesso!');
+      setOpenDelete(false);
+      setTransactionToDelete(null);
+    } catch (error) {
+      console.error('Erro ao deletar transação:', error);
+      console.error('Erro detalhes:', error.response?.data || error.message);
+      toast.error('Erro ao deletar transação. Por favor, tente novamente.');
+    }
   }
 
   return (
@@ -197,17 +237,57 @@ const Transactions = () => {
         </div>
         <div>
           <button
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setIsEditing(false);
+              setEditingTransactionId(null);
+              setDescription('');
+              setAmount('');
+              setDate(today);
+              setSelectedType('');
+              setSelectedCategory('');
+              setCategories([]);
+              setOpen(true);
+            }}
             className="mt-4 px-4 py-2 flex items-center cursor-pointer bg-blue-600 text-white rounded hover:bg-blue-700">
             <IoIosAdd size={30} /> Nova Transação
           </button>
         </div>
       </div>
       {
+        openDelete && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded shadow-lg w-96">
+              <h2 className="text-xl font-semibold mb-4">Confirmar Exclusão</h2>
+              <p className="mb-4">Tem certeza de que deseja excluir esta transação?</p>
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenDelete(false);
+                    setTransactionToDelete(null);
+                  }}
+                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 cursor-pointer">Cancelar</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    console.log('Clicou em excluir, ID:', transactionToDelete);
+                    if (transactionToDelete) {
+                      handleDeleteTransaction(transactionToDelete);
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer">Excluir</button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+      {
         open && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded shadow-lg w-96">
-              <h2 className="text-xl font-semibold mb-4">Adicionar Nova Transação</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                {isEditing ? 'Editar Transação' : 'Adicionar Nova Transação'}
+              </h2>
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Tipo</label>
@@ -259,11 +339,17 @@ const Transactions = () => {
                 <div className="flex justify-end space-x-2">
                   <button
                     type="button"
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpen(false);
+                      setIsEditing(false);
+                      setEditingTransactionId(null);
+                    }}
                     className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 cursor-pointer">Cancelar</button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer">Salvar</button>
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 cursor-pointer">
+                    {isEditing ? 'Atualizar' : 'Salvar'}
+                  </button>
                 </div>
               </form>
             </div>
@@ -288,9 +374,8 @@ const Transactions = () => {
             {transactions.map((transaction, index) => {
               const isLast = index === transactions.length - 1;
               const classes = isLast ? "p-4" : "p-4 border-b border-gray-100";
-
               return (
-                <tr key={transaction.id}>
+                <tr key={transaction._id}>
                   <td className={classes}>
                     <p className="text-sm text-gray-700 font-normal">
                       {new Intl.DateTimeFormat("pt-BR").format(new Date(transaction.date))}
@@ -316,8 +401,30 @@ const Transactions = () => {
                     </p>
                   </td>
                   <td className={classes + " flex gap-4"}>
-                    <MdModeEditOutline size={20} className="cursor-pointer" color='' />
-                    <MdDelete size={20} className="cursor-pointer" color='red' />
+                    <MdModeEditOutline 
+                      size={20} 
+                      className="cursor-pointer hover:text-blue-600" 
+                      onClick={() => {
+                        setIsEditing(true);
+                        setEditingTransactionId(transaction._id);
+                        setDescription(transaction.description);
+                        setAmount(new Intl.NumberFormat('pt-BR', {
+                          style: 'currency',
+                          currency: 'BRL',
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2
+                        }).format(transaction.amount));
+                        setDate(transaction.date.split('T')[0]);
+                        setSelectedType(transaction.type);
+                        setSelectedCategory(transaction.category);
+                        setOpen(true);
+                      }}
+                    />
+                    <MdDelete size={20} className="cursor-pointer hover:text-red-600" color='red' onClick={()=> {
+                      console.log('ID da transação:', transaction._id);
+                      setTransactionToDelete(transaction._id);
+                      setOpenDelete(true);
+                    }}/>
                   </td>
                 </tr>
               );
